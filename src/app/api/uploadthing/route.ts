@@ -1,13 +1,8 @@
-import { createRouteHandler } from "uploadthing/next";
+// Minimal stub for Uploadthing route to avoid build-time imports of uploadthing and env.
+export async function GET() {
+    return new Response("Not Found", { status: 404 });
+}
 
-import { ourFileRouter } from "@/server/uploadthing/core";
-import { env } from "@/env";
-
-// Export routes for Next App Router
-export const { GET, POST } = createRouteHandler({
-    router: ourFileRouter,
-    config: {
-        uploadthingSecret: env.UPLOADTHING_SECRET,
-        uploadthingId: env.UPLOADTHING_ID,
-    },
-});
+export async function POST() {
+    return new Response("Not Implemented", { status: 501 });
+}

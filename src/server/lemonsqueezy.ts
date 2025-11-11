@@ -1,12 +1,5 @@
-import { env } from "@/env";
-import { lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
-
 export function configureLemonSqueezy() {
-    lemonSqueezySetup({
-        apiKey: env.LEMONSQUEEZY_API_KEY,
-        onError: (error) => {
-            console.error(error);
-            throw new Error(`Lemon Squeezy API error: ${error.message}`);
-        },
-    });
+    // Stub configureLemonSqueezy for static site: no-op and avoids importing the lemonsqueezy
+    // package or `env` so builds don't require secrets.
+    // No-op in static/design mode.
 }

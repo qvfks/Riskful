@@ -1,39 +1,12 @@
-import { env } from "@/env";
-import crypto from "node:crypto";
-import { webhookHasMeta } from "@/validations/lemonsqueezy";
-import {
-    processWebhookEvent,
-    storeWebhookEvent,
-} from "@/server/actions/subscription/mutations";
+// Minimal stub for LemonSqueezy webhook route.
+//
+// For a static/design-only site we don't need webhook processing. This handler accepts
+// POSTs and returns 200 OK but performs no validation or side-effects. It purposely
+// avoids importing `@/env` or server actions so builds won't fail due to missing secrets.
+export async function POST(_request: Request) {
+    return new Response("OK", { status: 200 });
+}
 
-export async function POST(request: Request) {
-    const rawBody = await request.text();
-    const secret = env.LEMONSQUEEZY_WEBHOOK_SECRET;
-
-    const hmac = crypto.createHmac("sha256", secret);
-    const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
-    const signature = Buffer.from(
-        request.headers.get("X-Signature") ?? "",
-        "utf8",
-    );
-
-    if (!crypto.timingSafeEqual(digest, signature)) {
-        throw new Error("Invalid signature.");
-    }
-
-    const data = JSON.parse(rawBody) as unknown;
-
-    if (webhookHasMeta(data)) {
-        const webhookEventId = await storeWebhookEvent(
-            data.meta.event_name,
-            data,
-        );
-
-        // Non-blocking call to process the webhook event.
-        void processWebhookEvent(webhookEventId!);
-
-        return new Response("OK", { status: 200 });
-    }
-
-    return new Response("Data invalid", { status: 400 });
+export async function GET() {
+    return new Response("Not Found", { status: 404 });
 }
