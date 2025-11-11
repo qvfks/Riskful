@@ -1,37 +1,44 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+// Enable a "static mode" that removes the need for DB/auth
+// When NEXT_PUBLIC_STATIC_MODE=on, server-side envs become optional
+const isStaticMode = process.env.NEXT_PUBLIC_STATIC_MODE === "on";
+
 export const env = createEnv({
     /**
      * Specify your server-side environment variables schema here. This way you can ensure the app
      * isn't built with invalid env vars.
      */
     server: {
-        DATABASE_URL: z
-            .string()
-            .url()
-            .refine(
-                (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
-                "You forgot to change the default URL",
-            ),
+        DATABASE_URL: isStaticMode
+            ? z.string().optional()
+            : z
+                  .string()
+                  .url()
+                  .refine(
+                      (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
+                      "You forgot to change the default URL",
+                  ),
         NODE_ENV: z
             .enum(["development", "test", "production"])
             .default("development"),
-        NEXTAUTH_SECRET:
-            process.env.NODE_ENV === "production"
-                ? z.string()
-                : z.string().optional(),
-        NEXTAUTH_URL: z.string().url(),
-        GOOGLE_CLIENT_ID: z.string(),
-        GOOGLE_CLIENT_SECRET: z.string(),
-        GITHUB_CLIENT_ID: z.string(),
-        GITHUB_CLIENT_SECRET: z.string(),
-        RESEND_API_KEY: z.string(),
-        UPLOADTHING_SECRET: z.string(),
-        UPLOADTHING_ID: z.string(),
-        LEMONSQUEEZY_API_KEY: z.string(),
-        LEMONSQUEEZY_STORE_ID: z.string(),
-        LEMONSQUEEZY_WEBHOOK_SECRET: z.string(),
+        NEXTAUTH_SECRET: isStaticMode
+            ? z.string().optional()
+            : process.env.NODE_ENV === "production"
+              ? z.string()
+              : z.string().optional(),
+        NEXTAUTH_URL: isStaticMode ? z.string().url().optional() : z.string().url(),
+        GOOGLE_CLIENT_ID: isStaticMode ? z.string().optional() : z.string(),
+        GOOGLE_CLIENT_SECRET: isStaticMode ? z.string().optional() : z.string(),
+        GITHUB_CLIENT_ID: isStaticMode ? z.string().optional() : z.string(),
+        GITHUB_CLIENT_SECRET: isStaticMode ? z.string().optional() : z.string(),
+        RESEND_API_KEY: isStaticMode ? z.string().optional() : z.string(),
+        UPLOADTHING_SECRET: isStaticMode ? z.string().optional() : z.string(),
+        UPLOADTHING_ID: isStaticMode ? z.string().optional() : z.string(),
+        LEMONSQUEEZY_API_KEY: isStaticMode ? z.string().optional() : z.string(),
+        LEMONSQUEEZY_STORE_ID: isStaticMode ? z.string().optional() : z.string(),
+        LEMONSQUEEZY_WEBHOOK_SECRET: isStaticMode ? z.string().optional() : z.string(),
     },
 
     /**
@@ -41,9 +48,11 @@ export const env = createEnv({
      */
     client: {
         // NEXT_PUBLIC_CLIENTVAR: z.string(),
-        NEXT_PUBLIC_POSTHOG_KEY: z.string(),
+        NEXT_PUBLIC_POSTHOG_KEY: isStaticMode ? z.string().optional() : z.string(),
         NEXT_PUBLIC_WAITLIST_MODE: z.enum(["on", "off"]).default("off"),
         NEXT_PUBLIC_MAINTENANCE_MODE: z.enum(["on", "off"]).default("off"),
+        // New flag to disable DB/auth and run the site as static marketing pages only
+        NEXT_PUBLIC_STATIC_MODE: z.enum(["on", "off"]).default("on"),
     },
 
     /**
@@ -68,6 +77,7 @@ export const env = createEnv({
         NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
         NEXT_PUBLIC_WAITLIST_MODE: process.env.NEXT_PUBLIC_WAITLIST_MODE,
         NEXT_PUBLIC_MAINTENANCE_MODE: process.env.NEXT_PUBLIC_MAINTENANCE_MODE,
+        NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

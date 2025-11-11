@@ -1,11 +1,16 @@
 import { buttonVariants } from "@/components/ui/button";
 import { siteUrls } from "@/config/urls";
-import { getUser } from "@/server/auth";
+import { env } from "@/env";
 import Link from "next/link";
 import { Fragment } from "react";
 
 export async function HeaderAuth() {
-    const user = await getUser();
+    const staticMode = env.NEXT_PUBLIC_STATIC_MODE === "on";
+    let user: null | { id?: string } = null;
+    if (!staticMode) {
+        const { getUser } = await import("@/server/auth");
+        user = await getUser();
+    }
 
     return (
         <section className="flex items-center space-x-2">
@@ -18,6 +23,15 @@ export async function HeaderAuth() {
                 >
                     <span>Dashboard</span>
                 </Link>
+            ) : staticMode ? (
+                <Link
+                    href={siteUrls.pricing}
+                    className={buttonVariants({
+                        className: "flex items-center space-x-1",
+                    })}
+                >
+                    <span>Get Started</span>
+                </Link>
             ) : (
                 <Fragment>
                     <Link
@@ -27,10 +41,7 @@ export async function HeaderAuth() {
                         })}
                     >
                         <span>Sign Up</span>
-                        <span className="font-light italic">
-                            {" "}
-                            — it&apos;s free
-                        </span>
+                        <span className="font-light italic"> it&apos;s free</span>
                     </Link>
                 </Fragment>
             )}

@@ -6,6 +6,23 @@ import { getAbsoluteUrl } from "@/lib/utils";
 import { env } from "@/env";
 
 export async function middleware(request: NextRequest) {
+    // In static mode, bypass auth entirely and keep users on public pages
+    if (env.NEXT_PUBLIC_STATIC_MODE === "on") {
+        const path = request.nextUrl.pathname;
+        const protectedPrefixes = [
+            "/dashboard",
+            "/auth",
+            "/org",
+            "/admin",
+            "/profile",
+            "/feedback",
+            "/invite",
+        ];
+        if (protectedPrefixes.some((p) => path.startsWith(p))) {
+            return NextResponse.redirect(getAbsoluteUrl(siteUrls.home));
+        }
+        return NextResponse.next();
+    }
     const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
 
     /** check if application setting is on or off */
