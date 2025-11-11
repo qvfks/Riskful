@@ -6,10 +6,13 @@
 // Allow builds to skip env validation when either SKIP_ENV_VALIDATION or
 // NEXT_PUBLIC_STATIC_MODE=on is set in the build environment. This prevents hard failures
 // when secrets are intentionally absent for a static marketing deployment.
+// Also auto-skip when running on Vercel for marketing/static deployments unless explicitly
+// overridden. Vercel sets `process.env.VERCEL` during builds.
 const skipEnvValidation =
     process.env.SKIP_ENV_VALIDATION === "1" ||
     process.env.SKIP_ENV_VALIDATION === "true" ||
-    process.env.NEXT_PUBLIC_STATIC_MODE === "on";
+    process.env.NEXT_PUBLIC_STATIC_MODE === "on" ||
+    !!process.env.VERCEL;
 
 if (!skipEnvValidation) {
     try {
